@@ -14,14 +14,6 @@ git node['wordpress']['base_dir'] do
   action :sync
 end
 
-bash 'set mysql root password' do
-  code <<-EOH
-    mysql -u root -e "create database #{node['wordpress']['dbname']}"
-    mysql -u root -e "SET PASSWORD FOR #{node['wordpress']['dbuser']}@'localhost' = PASSWORD(#{node['wordpress']['dbpassword']});"
-  EOH
-  action :run
-end
-
 template "#{node['wordpress']['base_dir']}/wp-config.php" do
   source 'wp-config.php.erb'
   owner 'root'
@@ -40,6 +32,14 @@ end
 
 service 'mysqld' do
   action [:enable, :start]
+end
+
+bash 'set mysql root password' do
+  code <<-EOH
+    mysql -u root -e "create database #{node['wordpress']['dbname']};"
+    mysql -u root -e "SET PASSWORD FOR #{node['wordpress']['dbuser']}@'localhost' = PASSWORD(\'#{node['wordpress']['dbpassword']}\');"
+  EOH
+  action :run
 end
 
 service 'httpd' do
